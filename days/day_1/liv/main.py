@@ -31,8 +31,13 @@ def sum_calories(input_data: List[str]) -> List[int]:
 def main():
     calorie_counts = read_file(FILE_PATH)
     total_group_calories = sum_calories(calorie_counts)
-    most_calorific_elf = max(total_group_calories)
-    print(most_calorific_elf)
+    # most_calorific_elf = max(total_group_calories)
+    # print(most_calorific_elf)
+    sorted_calories_list = sorted(total_group_calories, reverse=True)
+    top_three_calorific_elves = sum(sorted_calories_list[0:3])
+    # slicer for integers - the last index is non-inclusive
+    # so the slicer above with return indexed values 0, 1 and 2.
+    print(top_three_calorific_elves)
 
 
 if __name__ == "__main__":
