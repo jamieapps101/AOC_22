@@ -1,1 +1,1 @@
-cat ../input_data/input.txt | cargo run --release
+cat ./input.txt | cargo run --release
