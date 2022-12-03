@@ -60,12 +60,6 @@ def rucksack_split(
     return priority_sum
 
 
-# half the length of the strings
-# identify the common character that appears in each string
-# assign priorities to lowercase and uppercase alphabet
-# sum the priorities of all items appearing twice
-
-
 def main():
     # input_data = ['vJrwpWtwJgWrhcsFMMfFFhFp',
     # 'jqHRNqRjqzjGDLGLrsFMfFZSrLrFZsSL',
@@ -80,3 +74,12 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+# logic (challenge 1):
+# half the length of the strings
+# identify the common character that appears in each string
+# assign priorities to lowercase and uppercase alphabet
+# sum the priorities of all items appearing twice
+
+# logic (challenge 2):
+#
