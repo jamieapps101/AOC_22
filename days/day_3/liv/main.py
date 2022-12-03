@@ -1,6 +1,6 @@
 from typing import List
 
-# from typing import Dict
+from typing import Dict
 
 FILE_PATH = "days/day_3/liv/input.txt"
 
@@ -15,16 +15,16 @@ def read_file(file_path: str) -> List[str]:
     return lines
 
 
-# def set_priority_values(items: str):
-#     priority_values = {}
-#     for item in items:
-#         if item.islower():
-#             if item not in priority_values:
-#                 priority_values[item] = ord(item) - 96
-#         elif item not in priority_values:
-#             priority_values[item] = ord(item) - 65 + 27
-#     # print(priority_values)
-#     return priority_values
+def set_priority_values(items: str):
+    priority_values = {}
+    for item in items:
+        if item.islower():
+            if item not in priority_values:
+                priority_values[item] = ord(item) - 96
+        elif item not in priority_values:
+            priority_values[item] = ord(item) - 65 + 27
+    # print(priority_values)
+    return priority_values
 
 
 # dict = {}
@@ -59,48 +59,53 @@ def read_file(file_path: str) -> List[str]:
 #     return priority_sum
 
 
-def group_elves(input_data: List[str]):
+def elf_badges(input_data: List[str], item_priorities: Dict[str, int]):
     elf_count = 0
-    elf_trio = []
-    all_elf_groups = []
+    elf_one = ""
+    elf_two = ""
+    common_items = ""
+    elf_three = ""
+    badge_priorities = 0
     for elf in input_data:
-        if elf_count < 2:
-            elf_trio.append(elf)
+        if elf_count == 0:
+            elf_one = elf
             elf_count += 1
-            # print(elf_trio)
-            # print(elf_count)
+        elif elf_count == 1:
+            elf_two = elf
+            common_items = "".join(set(elf_one).intersection(elf_two))
+            elf_count += 1
         elif elf_count == 2:
-            elf_trio.append(elf)
-            all_elf_groups.append(elf_trio)
-            # print(elf_count)
-            # print(elf_trio)
-            # print(all_elf_groups)
-            elf_trio = []
+            elf_three = elf
+            authentication_badge = "".join(
+                set(common_items).intersection(elf_three)
+            )  # noqa: E501
+            badge_priority = item_priorities[authentication_badge]
+            badge_priorities += badge_priority
             elf_count = 0
-            # print(elf_trio)
-            # print(elf_count)
-    # print(elf_count)
-    # print(elf_trio)
-    # print(all_elf_groups)
-    return all_elf_groups
+            elf_one = ""
+            elf_two = ""
+            common_items = ""
+            elf_three = ""
+    # print(badge_priorities)
+    return badge_priorities
 
 
 def main():
-    input_data = [
-        "vJrwpWtwJgWrhcsFMMfFFhFp",
-        "jqHRNqRjqzjGDLGLrsFMfFZSrLrFZsSL",
-        "PmmdzqPrVvPwwTWBwg",
-        "wMqvLMZHhHMvwLHjbvcjnnSBnvTQFn",
-        "ttgJtRGJQctTZtZT",
-        "CrZsJsPPZsGzwwsLwLmpwMDw",
-    ]
-    # input_data = read_file(FILE_PATH)
-    # item_priorities = set_priority_values(
-    # "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
-    # )
+    # input_data = [
+    #     "vJrwpWtwJgWrhcsFMMfFFhFp",
+    #     "jqHRNqRjqzjGDLGLrsFMfFZSrLrFZsSL",
+    #     "PmmdzqPrVvPwwTWBwg",
+    #     "wMqvLMZHhHMvwLHjbvcjnnSBnvTQFn",
+    #     "ttgJtRGJQctTZtZT",
+    #     "CrZsJsPPZsGzwwsLwLmpwMDw",
+    # ]
+    input_data = read_file(FILE_PATH)
+    item_priorities = set_priority_values(
+        "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+    )
     # rucksack_split(input_data, item_priorities)
-    elf_groups = group_elves(input_data)
-    print(elf_groups)
+    badges_sum = elf_badges(input_data, item_priorities)
+    print(badges_sum)
 
 
 if __name__ == "__main__":
