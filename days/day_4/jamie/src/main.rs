@@ -1,12 +1,25 @@
-use std::convert::TryFrom;
-use std::io;
+use std::{convert::TryFrom, env, io};
+
 fn main() {
+    let mode_str = env::args().into_iter().nth(1).unwrap();
+    let mode = mode_str
+        .parse::<u32>()
+        .unwrap_or_else(|_| panic!("mode = {mode_str}"));
     let input_lines = io::stdin().lines().filter_map(|l| l.ok());
-    let total_overlapped_groups = input_lines
-        .map(|l| line_to_range_group(l).unwrap())
-        .filter(Range::either_contains)
-        .count();
-    println!("total_overlapped_groups: {total_overlapped_groups}");
+
+    let total = match mode {
+        1 => input_lines
+            .map(|l| line_to_range_group(l).unwrap())
+            .filter(Range::either_contains)
+            .count(),
+        2 => input_lines
+            .map(|l| line_to_range_group(l).unwrap())
+            .filter(Range::overlaps)
+            .count(),
+        _ => panic!("I don't have a mode {mode}"),
+    };
+
+    println!("total: {total}");
 }
 
 #[cfg_attr(test, derive(Debug, PartialEq))]
@@ -22,6 +35,11 @@ impl Range {
 
     fn either_contains(group: &(Range, Range)) -> bool {
         group.0.contains(&group.1) || group.1.contains(&group.0)
+    }
+
+    fn overlaps(group: &(Range, Range)) -> bool {
+        !((group.0.start > group.1.start && group.0.start > group.1.end)
+            || (group.0.end < group.1.start && group.0.end < group.1.end))
     }
 }
 
