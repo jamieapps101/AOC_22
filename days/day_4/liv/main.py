@@ -47,24 +47,14 @@ def section_coverage(input_data: List[str]):
         elf_two_range.extend(range(elf_two_minimum, elf_two_maximum + 1))
         # print(elf_one_range)
         # print(elf_two_range)
-        if (
-            elf_two_range.count(elf_one_minimum) == 1
-            and elf_two_range.count(elf_one_maximum) == 1
-            and elf_one_range.count(elf_two_minimum) == 1
-            and elf_one_range.count(elf_two_maximum) == 1
-        ):
+        if not set(elf_one_range).isdisjoint(elf_two_range):
             assignment_covered_count += 1
-        elif (
-            elf_two_range.count(elf_one_minimum) == 1
-            and elf_two_range.count(elf_one_maximum) == 1
-        ):
+        elif not set(elf_two_range).isdisjoint(elf_one_range):
             assignment_covered_count += 1
-        elif (
-            elf_one_range.count(elf_two_minimum) == 1
-            and elf_one_range.count(elf_two_maximum) == 1
-        ):
-            assignment_covered_count += 1
-        # print(assignment_covered_count)
+            # not inverts the output of the if statement - .isdisjoint
+            # returns True if there is no intersection between the two
+            # sets normally, so adding not triggers the condition where
+            # .isdisjoint returns false (i.e. there is an intersection)
         elf_one = ""
         elf_two = ""
         elf_one_minimum = ""
@@ -76,6 +66,7 @@ def section_coverage(input_data: List[str]):
     return assignment_covered_count
 
 
+# challenge one:
 # store values either side of the dash as
 # pair 1 min, pair 1 max range and pair 2 min, pair 2 max range
 # expand the ranges
@@ -85,6 +76,9 @@ def section_coverage(input_data: List[str]):
 # if first and last value in pair 2 present in pair 1
 # add 1 to fully covered count
 # reset variables!
+
+# challenge two:
+# compare ranges
 
 
 def main():
