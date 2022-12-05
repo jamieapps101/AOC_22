@@ -82,9 +82,13 @@ impl<I: AsRef<str>, S: Iterator<Item = I>> From<&mut S> for Columns<char> {
 
 impl<I> Columns<I> {
     fn apply(&mut self, a: Action) {
+        let mut temp = Vec::new();
         for _i in 0..a.quantity {
-            let temp = self.columns[a.from - 1].items.pop().unwrap();
-            self.columns[a.to - 1].items.push(temp);
+            temp.push(self.columns[a.from - 1].items.pop().unwrap());
+        }
+        for _i in 0..a.quantity {
+            let local_temp = temp.pop().unwrap();
+            self.columns[a.to - 1].items.push(local_temp);
         }
     }
 }
