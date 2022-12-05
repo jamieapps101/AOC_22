@@ -3,13 +3,31 @@ use std::io;
 fn main() {
     let mut lines = io::stdin().lines().filter_map(|l| l.ok());
     let mut columns = Columns::from(&mut lines);
-    println!("Before\n{}", columns);
+    // println!("Before\n{}", columns);
     let action_lines = lines.skip(1);
+    let mut swap_buffer = vec![0u8; 100_000_000];
     action_lines
         .filter_map(|l| Action::try_from(l).ok())
-        .for_each(|action| columns.apply(action));
-    println!("After\n{}", columns);
-    let tops = String::from_iter(columns.tops().into_iter());
+        .enumerate()
+        .for_each(|(index, action)| {
+            if index % 1000 == 0 {
+                println!("index: {}", index)
+            };
+            let action_from_1 = action.from - 1;
+            let len_to_swap = columns.columns[action_from_1].items.len();
+            let swap_buffer_l = &mut swap_buffer[0..action.quantity];
+            swap_buffer_l.copy_from_slice(
+                &columns.columns[action_from_1].items[len_to_swap - action.quantity..len_to_swap],
+            );
+            columns.columns[action_from_1]
+                .items
+                .truncate(len_to_swap - action.quantity);
+            columns.columns[action.to - 1]
+                .items
+                .extend(swap_buffer_l.iter());
+        });
+    // println!("After\n{}", columns);
+    let tops = String::from_iter(columns.tops().into_iter().map(|u| u as char));
     println!("Tops: {tops}");
 }
 
@@ -29,7 +47,7 @@ impl<I> From<Vec<I>> for Column<I> {
     }
 }
 
-impl<I: AsRef<str>, S: Iterator<Item = I>> From<&mut S> for Columns<char> {
+impl<I: AsRef<str>, S: Iterator<Item = I>> From<&mut S> for Columns<u8> {
     fn from(source: &mut S) -> Self {
         let mut data: Vec<Vec<Option<char>>> = Vec::new();
         for s in source {
@@ -67,7 +85,7 @@ impl<I: AsRef<str>, S: Iterator<Item = I>> From<&mut S> for Columns<char> {
                 let line = &data[line_index];
                 if line.len() > i {
                     if let Some(c) = line[i] {
-                        col_data.push(c);
+                        col_data.push(c as u8);
                     } else {
                         break;
                     }
@@ -77,19 +95,6 @@ impl<I: AsRef<str>, S: Iterator<Item = I>> From<&mut S> for Columns<char> {
         }
 
         Self { columns }
-    }
-}
-
-impl<I> Columns<I> {
-    fn apply(&mut self, a: Action) {
-        let mut temp = Vec::new();
-        for _i in 0..a.quantity {
-            temp.push(self.columns[a.from - 1].items.pop().unwrap());
-        }
-        for _i in 0..a.quantity {
-            let local_temp = temp.pop().unwrap();
-            self.columns[a.to - 1].items.push(local_temp);
-        }
     }
 }
 
@@ -104,7 +109,7 @@ impl<I: Copy + Clone> Columns<I> {
 }
 
 use std::fmt;
-impl fmt::Display for Columns<char> {
+impl<I: std::fmt::Display> fmt::Display for Columns<I> {
     // This trait requires `fmt` with this exact signature.
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         // determine highest col
@@ -154,75 +159,6 @@ impl TryFrom<String> for Action {
 #[cfg(test)]
 mod test {
     use super::*;
-    #[test]
-    fn test_columns_create() {
-        let lines = vec![
-            "     [D]    ",
-            " [N] [C]    ",
-            " [Z] [M] [P]",
-            "  1   2   3 ",
-        ];
-        let columns = Columns::from(&mut lines.into_iter());
-        let ref_columns = Columns {
-            columns: vec![
-                Column {
-                    items: vec!['Z', 'N'],
-                },
-                Column {
-                    items: vec!['M', 'C', 'D'],
-                },
-                Column { items: vec!['P'] },
-            ],
-        };
-        assert_eq!(columns, ref_columns);
-    }
-
-    #[test]
-    #[ignore]
-    fn test_columns_display() {
-        let lines = vec![
-            "     [D]    ",
-            " [N] [C]    ",
-            " [Z] [M] [P]",
-            "  1   2   3 ",
-        ];
-        let columns = Columns::from(&mut lines.into_iter());
-        println!("{columns}");
-    }
-
-    #[test]
-    fn test_columns_apply() {
-        let mut columns = Columns {
-            columns: vec![
-                Column {
-                    items: vec!['Z', 'N'],
-                },
-                Column {
-                    items: vec!['M', 'C', 'D'],
-                },
-                Column { items: vec!['P'] },
-            ],
-        };
-
-        let end_columns = Columns {
-            columns: vec![
-                Column {
-                    items: vec!['Z', 'N', 'D', 'C'],
-                },
-                Column { items: vec!['M'] },
-                Column { items: vec!['P'] },
-            ],
-        };
-        let a = Action {
-            quantity: 2,
-            from: 2,
-            to: 1,
-        };
-
-        columns.apply(a);
-
-        assert_eq!(end_columns, columns);
-    }
 
     #[test]
     fn test_columns_tops() {
