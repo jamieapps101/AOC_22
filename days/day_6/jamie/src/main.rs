@@ -4,7 +4,7 @@ use std::io;
 fn main() {
     let line_source = io::stdin().lines().filter_map(|l| l.ok());
     for (line_index, line) in line_source.enumerate() {
-        if let Some(start_position) = find_start_position::<4, _>(&line) {
+        if let Some(start_position) = find_start_position::<14, _>(&line) {
             println!("Line {line_index} start position: {start_position:?}")
         }
     }
@@ -115,6 +115,30 @@ mod test {
         assert_eq!(
             find_start_position::<4, _>("zcfzfwzzqfrljwzlrfnpqdbhtmscgvjw"),
             Some(11)
+        );
+    }
+
+    #[test]
+    fn test_find_start_position_as_message() {
+        assert_eq!(
+            find_start_position::<14, _>("mjqjpqmgbljsphdztnvjfqwrcgsmlb"),
+            Some(19)
+        );
+        assert_eq!(
+            find_start_position::<14, _>("bvwbjplbgvbhsrlpgdmjqwftvncz"),
+            Some(23)
+        );
+        assert_eq!(
+            find_start_position::<14, _>("nppdvjthqldpwncqszvftbrmjlhg"),
+            Some(23)
+        );
+        assert_eq!(
+            find_start_position::<14, _>("nznrnfrfntjfmvfwmzdfjlvtqnbhcprsg"),
+            Some(29)
+        );
+        assert_eq!(
+            find_start_position::<14, _>("zcfzfwzzqfrljwzlrfnpqdbhtmscgvjw"),
+            Some(26)
         );
     }
 }
