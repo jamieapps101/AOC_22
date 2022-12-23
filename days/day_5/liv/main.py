@@ -72,8 +72,12 @@ def apply_instructions(
             moving_crate_count = int(match.group(1))
             source_pile = match.group(2)
             target_pile = match.group(3)
+            buffer_pile = []
             for index in range(moving_crate_count):
                 crate_in_transit = pile_of_crates[source_pile].pop()
+                buffer_pile.append(crate_in_transit)
+            for index in range(moving_crate_count):
+                crate_in_transit = buffer_pile.pop()
                 pile_of_crates[target_pile].append(crate_in_transit)
     return pile_of_crates
 
@@ -93,7 +97,7 @@ def main():
     # print(position_input_data)
     instructions_input_data = read_instruction_data(INSTRUCTION_FILE_PATH)
     # print(instruction_input_data)
-    # instructions_input_data =
+    # instructions_input_data = \
     #   read_instruction_data(TEST_INSTRUCTION_FILE_PATH)
     # print(instructions_input_data)
     extracted_columns = extract_columns(position_input_data)
