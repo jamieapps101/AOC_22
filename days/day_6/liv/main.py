@@ -14,16 +14,16 @@ def identify_marker(input_data: str):
     marker_buffer = ""
     position_count = 0
     for char in input_data:
-        if len(marker_buffer) < 4:
+        if len(marker_buffer) < 14:
             marker_buffer += char
             # print(marker_buffer)
             position_count += 1
             # print(position_count)
-        elif len(marker_buffer) == 4:
+        elif len(marker_buffer) == 14:
             # print(position_count)
             potential_marker = set(marker_buffer)
             # print(potential_marker)
-            if len(potential_marker) == 4:
+            if len(potential_marker) == 14:
                 print(position_count)
                 break
             else:
