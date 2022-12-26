@@ -71,30 +71,62 @@ def create_directories(input_data: List[str]) -> Dict:
 
 
 def sum_directory_sizes(entries: dict, directory_name: str) -> Tuple[int, int]:
+    total_sizes = {}
     total_size = 0
-    sum_size = 0
     for entry_name in entries:
         entry = entries[entry_name]
         if isinstance(entry, int):
             total_size += entry
+            # total_sizes[entry_name] = entry
         elif isinstance(entry, dict):
-            directory_total_size, directory_sum_size = sum_directory_sizes(
+            directory_total_size, directory_total_sizes = sum_directory_sizes(
                 entry, entry_name
             )
+            total_sizes[entry_name] = directory_total_size
             total_size += directory_total_size
-            sum_size += directory_sum_size
-    if total_size < 100000:
-        sum_size += total_size
-    return total_size, sum_size
+            print(directory_total_sizes)
+            for entry_name, entry in directory_total_sizes.items():
+                total_sizes[directory_name + "/" + entry_name] = entry
+    return total_size, total_sizes
+
+
+def get_required_disk_space(total_size: int):
+    free_disk_space = 70000000 - total_size
+    disk_space_required = 30000000 - free_disk_space
+    print(disk_space_required)
+    return disk_space_required
+
+
+def find_ideal_directory(total_sizes: Dict, disk_space_required: int):
+    sized_directories = list(total_sizes.items())
+    print(f"sized_directories = {sized_directories}")
+    sorted_sized_directories = sorted(
+        sized_directories, key=lambda item: item[1], reverse=True
+    )
+    file_to_delete = None
+    previous_directory = None
+    print(f"sorted_size_directories = {sorted_sized_directories}")
+    for directory in sorted_sized_directories:
+        item_size = directory[1]
+        print(f"item_size = {item_size}")
+        if item_size < disk_space_required:
+            if previous_directory is not None:
+                previous_directory_name = previous_directory
+                file_to_delete = previous_directory_name
+            break
+        previous_directory = directory
+    print(file_to_delete)
 
 
 def main():
     # input_data = read_file(TEST_FILE_PATH)
     input_data = read_file(FILE_PATH)
     directories = create_directories(input_data)
-    total_size, sum_size = sum_directory_sizes(directories, "/")
+    total_size, total_sizes = sum_directory_sizes(directories, "/")
     print(f"Total Size = {total_size}")
-    print(f"Sum Size = {sum_size}")
+    print(f"Total Sizes = {total_sizes}")
+    disk_space_required = get_required_disk_space(total_size)
+    find_ideal_directory(total_sizes, disk_space_required)
 
 
 if __name__ == "__main__":
