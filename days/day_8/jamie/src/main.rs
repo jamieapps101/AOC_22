@@ -5,6 +5,8 @@ fn main() {
     let mut forest = Forest::from(lines);
     forest.assess_visibility();
     println!("Visibile from outside: {}", forest.count_visible());
+    println!("Best scenic score: {}", forest.assess_scenic_scores());
+
     // println!("Hello, world!");
 }
 
@@ -186,8 +188,6 @@ impl Forest {
         (0..shape.y).for_each(|y| self[(0, y)].set_visibility(Visibility::Left));
         (0..shape.y).for_each(|y| self[(shape.x - 1, y)].set_visibility(Visibility::Right));
 
-        // dbg!(self.count_visible());
-
         // for each direction
         // horizontal
         for x in 0..shape.x {
@@ -224,6 +224,79 @@ impl Forest {
         }
 
         // dbg!(self.count_visible());
+    }
+
+    fn assess_scenic_scores(&self) -> usize {
+        let shape = self.shape();
+        let mut max_score = 0;
+        for y in 0..shape.y {
+            for x in 0..shape.x {
+                #[cfg(test)]
+                dbg!(&x);
+                #[cfg(test)]
+                dbg!(&y);
+
+                let left_vec = if x != 0 {
+                    (0..x).map(|x_l| &self[(x_l, y)]).rev().collect()
+                } else {
+                    vec![]
+                };
+                #[cfg(test)]
+                dbg!(&left_vec);
+
+                let right_vec = if x != shape.x - 1 {
+                    (x + 1..shape.x).map(|x_l| &self[(x_l, y)]).collect()
+                } else {
+                    vec![]
+                };
+                #[cfg(test)]
+                dbg!(&right_vec);
+
+                let top_vec = if y != 0 {
+                    (0..y).map(|y_l| &self[(x, y_l)]).rev().collect()
+                } else {
+                    vec![]
+                };
+                #[cfg(test)]
+                dbg!(&top_vec);
+
+                let bottom_vec = if y != shape.y - 1 {
+                    (y + 1..shape.y).map(|y_l| &self[(x, y_l)]).collect()
+                } else {
+                    vec![]
+                };
+                #[cfg(test)]
+                dbg!(&bottom_vec);
+
+                #[cfg(test)]
+                print!("--(");
+                let score = [top_vec, bottom_vec, left_vec, right_vec]
+                    .into_iter()
+                    .map(|v| {
+                        let score = v
+                            .iter()
+                            .enumerate()
+                            .find_map(|(index, &t)| {
+                                if t.height >= self[(x, y)].height {
+                                    Some(index + 1)
+                                } else {
+                                    None
+                                }
+                            })
+                            .unwrap_or(v.len());
+                        #[cfg(test)]
+                        print!("{score},");
+                        score
+                    })
+                    .product::<usize>();
+                #[cfg(test)]
+                print!(")({score})");
+                max_score = max_score.max(score);
+            }
+            #[cfg(test)]
+            println!("");
+        }
+        max_score
     }
 }
 
@@ -310,8 +383,8 @@ mod test {
         assert!(!t.get_visibility(Visibility::Left));
         assert!(!t.get_visibility(Visibility::Right));
         assert!(t.is_visible());
-        t.unset_visibility(Visibility::Top);
-        assert!(!t.is_visible());
+        // t.unset_visibility(Visibility::Top);
+        // assert!(!t.is_visible());
     }
 
     #[test]
@@ -351,5 +424,19 @@ mod test {
         let ref_trees_seen: Vec<usize> = vec![0, 1, 2, 6];
         //
         assert_eq!(trees_seen, ref_trees_seen);
+    }
+
+    #[test]
+    fn test_assess_scenic_score() {
+        let input = vec![
+            "30373".to_owned(),
+            "25512".to_owned(),
+            "65332".to_owned(),
+            "33549".to_owned(),
+            "35390".to_owned(),
+        ];
+        let f = Forest::from(input.iter());
+        let max_score = f.assess_scenic_scores();
+        assert_eq!(max_score, 8);
     }
 }
