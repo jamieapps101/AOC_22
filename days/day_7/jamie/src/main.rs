@@ -1,3 +1,6 @@
+// ignore warnings here as code was abandoned
+#![allow(clippy::all)]
+
 use std::cell::{Ref, RefCell};
 use std::io;
 use std::ops::Deref;
