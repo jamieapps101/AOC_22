@@ -1,0 +1,361 @@
+use std::io::stdin;
+
+fn main() {
+    let commands = stdin()
+        .lines()
+        .filter_map(|l| l.ok())
+        .map(|l| Command::try_from(l).unwrap());
+
+    let mut rope = Rope::default();
+
+    let mut coord_log: Vec<Coord> = rope
+        .apply_multiple(commands)
+        .into_iter()
+        .flatten()
+        .collect();
+
+    coord_log.sort_by(|a, b| {
+        a.x.partial_cmp(&b.x)
+            .or_else(|| a.y.partial_cmp(&b.y))
+            .unwrap()
+    });
+
+    let mut position_log = vec![];
+    let mut count_log = vec![];
+    if !coord_log.is_empty() {
+        for c in coord_log.iter() {
+            let search_result =
+                position_log.iter().enumerate().find_map(
+                    |(i, c_l)| {
+                        if c_l == &c {
+                            Some(i)
+                        } else {
+                            None
+                        }
+                    },
+                );
+            if let Some(index) = search_result {
+                count_log[index] += 1;
+            } else {
+                position_log.push(c);
+                count_log.push(1);
+            }
+        }
+
+        let most_visited_index = count_log
+            .iter()
+            .enumerate()
+            .max_by(|a, b| a.1.cmp(b.1))
+            .unwrap()
+            .0;
+
+        let most_visited_coord = position_log[most_visited_index];
+        println!(
+            "most visited: {}, {} times",
+            most_visited_coord, most_visited_index
+        );
+        println!("{} location visited", count_log.len());
+    } else {
+        println!("No coord log");
+    }
+}
+
+#[derive(Debug, Copy, Clone)]
+#[cfg_attr(test, derive(PartialEq))]
+enum Direction {
+    Up,
+    Left,
+    Right,
+    Down,
+}
+
+#[derive(Debug)]
+#[cfg_attr(test, derive(PartialEq))]
+struct Command {
+    dir: Direction,
+    dist: i32,
+}
+
+impl Command {
+    fn split(self) -> CommandSplitter {
+        CommandSplitter {
+            command: self,
+            state: 0,
+        }
+    }
+}
+
+struct CommandSplitter {
+    command: Command,
+    state: i32,
+}
+
+impl Iterator for CommandSplitter {
+    type Item = Command;
+    fn next(&mut self) -> Option<Self::Item> {
+        if self.state < self.command.dist {
+            self.state += 1;
+            Some(Command {
+                dir: self.command.dir,
+                dist: 1,
+            })
+        } else {
+            None
+        }
+    }
+}
+
+#[derive(Debug)]
+enum CommandParseErr {
+    NoDirStr,
+    NoDestStr,
+    AdditionalItems(String),
+    IncorrectDirSymbol(String),
+    DistParseErr(std::num::ParseIntError),
+}
+
+impl From<std::num::ParseIntError> for CommandParseErr {
+    fn from(e: std::num::ParseIntError) -> Self {
+        CommandParseErr::DistParseErr(e)
+    }
+}
+
+impl TryFrom<String> for Command {
+    type Error = CommandParseErr;
+    fn try_from(value: String) -> Result<Self, Self::Error> {
+        let mut spliterator = value.split_whitespace();
+        let dir_str = spliterator.next().ok_or(CommandParseErr::NoDirStr)?;
+        let dist_str = spliterator.next().ok_or(CommandParseErr::NoDestStr)?;
+        if let Some(i) = spliterator.next() {
+            return Err(CommandParseErr::AdditionalItems(i.to_owned()));
+        }
+        let dir = match dir_str {
+            "L" => Direction::Left,
+            "R" => Direction::Right,
+            "U" => Direction::Up,
+            "D" => Direction::Down,
+            _ => return Err(CommandParseErr::IncorrectDirSymbol(dir_str.to_owned())),
+        };
+        let dist = dist_str.parse::<i32>()?;
+        Ok(Command { dir, dist })
+    }
+}
+
+#[derive(Clone, PartialEq, Debug, Default)]
+struct Coord {
+    x: i32,
+    y: i32,
+}
+
+impl Coord {
+    fn apply(&mut self, c: Command) {
+        match c.dir {
+            Direction::Up => self.y += c.dist,
+            Direction::Left => self.x -= c.dist,
+            Direction::Right => self.x += c.dist,
+            Direction::Down => self.y -= c.dist,
+        }
+    }
+}
+
+impl std::fmt::Display for Coord {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "({},{})", self.x, self.y)
+    }
+}
+
+impl std::ops::Sub for Coord {
+    type Output = Coord;
+    fn sub(self, rhs: Self) -> Self::Output {
+        Coord {
+            x: self.x - rhs.x,
+            y: self.y - rhs.y,
+        }
+    }
+}
+
+impl From<[i32; 2]> for Coord {
+    fn from(value: [i32; 2]) -> Self {
+        Coord {
+            x: value[0],
+            y: value[1],
+        }
+    }
+}
+
+// impl Coord {
+//     fn abs(&self) -> f32 {
+//         ((self.x as f32).powi(2) +  (self.y as f32).powi(2)).powf(0.5)
+//     }
+// }
+
+#[derive(Default)]
+struct Rope {
+    head: Coord,
+    tail: Coord,
+}
+
+impl Rope {
+    fn apply_multiple<S: Iterator<Item = Command>>(&mut self, source: S) -> Vec<Vec<Coord>> {
+        let mut rtn_vec = vec![vec![self.tail.clone()]];
+        rtn_vec.extend(source.map(|c| {
+            // apply command to head
+            c.split()
+                .map(|c_s| {
+                    self.apply(c_s);
+                    self.tail.clone()
+                })
+                .collect::<Vec<Coord>>()
+        }));
+        rtn_vec
+    }
+
+    /// Apply command to head of rope, then apply reaction behaviour to tail
+    fn apply(&mut self, c: Command) {
+        self.head.apply(c);
+        // apply reaction to tail
+        let x_diff = self.head.x - self.tail.x;
+        let y_diff = self.head.y - self.tail.y;
+        if x_diff.abs() >= 2 || y_diff.abs() >= 2 {
+            if x_diff != 0 {
+                self.tail.x += x_diff / x_diff.abs()
+            }
+            if y_diff != 0 {
+                self.tail.y += y_diff / y_diff.abs()
+            }
+        }
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[test]
+    fn command_parse() {
+        let input_str = vec![
+            "R 4".to_owned(),
+            "U 4".to_owned(),
+            "L 3".to_owned(),
+            "D 1".to_owned(),
+            "R 4".to_owned(),
+            "D 1".to_owned(),
+            "L 5".to_owned(),
+            "R 2".to_owned(),
+        ];
+
+        let dut_commands = input_str
+            .into_iter()
+            .filter_map(|s| Command::try_from(s).ok())
+            .collect::<Vec<Command>>();
+
+        let ref_commands = vec![
+            Command {
+                dir: Direction::Right,
+                dist: 4,
+            },
+            Command {
+                dir: Direction::Up,
+                dist: 4,
+            },
+            Command {
+                dir: Direction::Left,
+                dist: 3,
+            },
+            Command {
+                dir: Direction::Down,
+                dist: 1,
+            },
+            Command {
+                dir: Direction::Right,
+                dist: 4,
+            },
+            Command {
+                dir: Direction::Down,
+                dist: 1,
+            },
+            Command {
+                dir: Direction::Left,
+                dist: 5,
+            },
+            Command {
+                dir: Direction::Right,
+                dist: 2,
+            },
+        ];
+
+        assert_eq!(dut_commands, ref_commands);
+    }
+
+    #[test]
+    fn test_apply_multiple() {
+        let input_str = vec![
+            "R 4".to_owned(),
+            "U 4".to_owned(),
+            "L 3".to_owned(),
+            "D 1".to_owned(),
+            "R 4".to_owned(),
+            "D 1".to_owned(),
+            "L 5".to_owned(),
+            "R 2".to_owned(),
+        ];
+
+        let commands = input_str
+            .into_iter()
+            .filter_map(|s| Command::try_from(s).ok())
+            .collect::<Vec<Command>>();
+
+        let mut rope = Rope::default();
+
+        let ref_log: Vec<Vec<Coord>> = vec![
+            // Initial state
+            vec![[0, 0].into()],
+            // R 4
+            vec![[0, 0].into(), [1, 0].into(), [2, 0].into(), [3, 0].into()],
+            // U 4
+            vec![[3, 0].into(), [4, 1].into(), [4, 2].into(), [4, 3].into()],
+            // L 3
+            vec![[4, 3].into(), [3, 4].into(), [2, 4].into()],
+            // D 1
+            vec![[2, 4].into()],
+        ];
+
+        let log = rope.apply_multiple(commands.into_iter());
+        println!("log:\n{log:#?}");
+
+        for (ref_step, step) in ref_log.iter().zip(log[..6].iter()) {
+            assert_eq!(ref_step, step);
+        }
+    }
+
+    #[test]
+    fn test_command_splitter() {
+        let c = Command {
+            dir: Direction::Up,
+            dist: 4,
+        };
+        let dut_sub_c: Vec<Command> = c.split().collect();
+
+        let ref_sub_c = vec![
+            Command {
+                dir: Direction::Up,
+                dist: 1,
+            },
+            Command {
+                dir: Direction::Up,
+                dist: 1,
+            },
+            Command {
+                dir: Direction::Up,
+                dist: 1,
+            },
+            Command {
+                dir: Direction::Up,
+                dist: 1,
+            },
+        ];
+
+        assert_eq!(dut_sub_c.len(), 4);
+        assert_eq!(dut_sub_c, ref_sub_c);
+    }
+}
