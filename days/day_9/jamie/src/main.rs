@@ -6,28 +6,33 @@ fn main() {
         .filter_map(|l| l.ok())
         .map(|l| Command::try_from(l).unwrap());
 
-    let mut rope = Rope::default();
+    let mut rope = Rope::init(10);
 
-    let mut coord_log: Vec<Coord> = rope
+    let coord_log: Vec<Coord> = rope
         .apply_multiple(commands)
         .into_iter()
         .flatten()
         .collect();
 
-    coord_log.sort_by(|a, b| {
-        a.x.partial_cmp(&b.x)
-            .or_else(|| a.y.partial_cmp(&b.y))
-            .unwrap()
-    });
+    // coord_log.sort_by(|a, b| {
+    //     a.x.partial_cmp(&b.x)
+    //         .or_else(|| a.y.partial_cmp(&b.y))
+    //         .unwrap()
+    // });
 
+    let (_count_log, position_log) = inspect_log(coord_log);
+    println!("unique locations visited: {}", position_log.len());
+}
+
+fn inspect_log(coord_log: Vec<Coord>) -> (Vec<usize>, Vec<Coord>) {
     let mut position_log = vec![];
     let mut count_log = vec![];
     if !coord_log.is_empty() {
-        for c in coord_log.iter() {
+        for &c in coord_log.iter() {
             let search_result =
                 position_log.iter().enumerate().find_map(
-                    |(i, c_l)| {
-                        if c_l == &c {
+                    |(i, &c_l)| {
+                        if c_l == c {
                             Some(i)
                         } else {
                             None
@@ -58,6 +63,7 @@ fn main() {
     } else {
         println!("No coord log");
     }
+    (count_log, position_log)
 }
 
 #[derive(Debug, Copy, Clone)]
@@ -141,7 +147,7 @@ impl TryFrom<String> for Command {
     }
 }
 
-#[derive(Clone, PartialEq, Debug, Default)]
+#[derive(Clone, PartialEq, Debug, Default, Copy)]
 struct Coord {
     x: i32,
     y: i32,
@@ -192,18 +198,25 @@ impl From<[i32; 2]> for Coord {
 #[derive(Default)]
 struct Rope {
     head: Coord,
-    tail: Coord,
+    tail: Vec<Coord>,
 }
 
 impl Rope {
+    fn init(len: usize) -> Self {
+        Rope {
+            head: Coord::default(),
+            tail: vec![Coord::default(); len - 1],
+        }
+    }
+
     fn apply_multiple<S: Iterator<Item = Command>>(&mut self, source: S) -> Vec<Vec<Coord>> {
-        let mut rtn_vec = vec![vec![self.tail.clone()]];
+        let mut rtn_vec = vec![vec![*self.tail.last().unwrap()]];
         rtn_vec.extend(source.map(|c| {
             // apply command to head
             c.split()
                 .map(|c_s| {
                     self.apply(c_s);
-                    self.tail.clone()
+                    *self.tail.last().unwrap()
                 })
                 .collect::<Vec<Coord>>()
         }));
@@ -214,14 +227,19 @@ impl Rope {
     fn apply(&mut self, c: Command) {
         self.head.apply(c);
         // apply reaction to tail
-        let x_diff = self.head.x - self.tail.x;
-        let y_diff = self.head.y - self.tail.y;
-        if x_diff.abs() >= 2 || y_diff.abs() >= 2 {
-            if x_diff != 0 {
-                self.tail.x += x_diff / x_diff.abs()
-            }
-            if y_diff != 0 {
-                self.tail.y += y_diff / y_diff.abs()
+        for i in 0..self.tail.len() {
+            let ref_knot = if i == 0 { self.head } else { self.tail[i - 1] };
+            let current_knot = &mut self.tail[i];
+
+            let x_diff = ref_knot.x - current_knot.x;
+            let y_diff = ref_knot.y - current_knot.y;
+            if x_diff.abs() >= 2 || y_diff.abs() >= 2 {
+                if x_diff != 0 {
+                    current_knot.x += x_diff / x_diff.abs()
+                }
+                if y_diff != 0 {
+                    current_knot.y += y_diff / y_diff.abs()
+                }
             }
         }
     }
@@ -305,7 +323,7 @@ mod test {
             .filter_map(|s| Command::try_from(s).ok())
             .collect::<Vec<Command>>();
 
-        let mut rope = Rope::default();
+        let mut rope = Rope::init(2);
 
         let ref_log: Vec<Vec<Coord>> = vec![
             // Initial state
@@ -357,5 +375,77 @@ mod test {
 
         assert_eq!(dut_sub_c.len(), 4);
         assert_eq!(dut_sub_c, ref_sub_c);
+    }
+
+    #[test]
+    fn test_apply_multiple_10_knot() {
+        let input_res_0 = (
+            vec![
+                "R 4".to_owned(),
+                "U 4".to_owned(),
+                "L 3".to_owned(),
+                "D 1".to_owned(),
+                "R 4".to_owned(),
+                "D 1".to_owned(),
+                "L 5".to_owned(),
+                "R 2".to_owned(),
+            ],
+            1,
+        );
+
+        let input_res_1 = (
+            vec![
+                "R 5".to_owned(),
+                "U 8".to_owned(),
+                "L 8".to_owned(),
+                "D 3".to_owned(),
+                "R 17".to_owned(),
+                "D 10".to_owned(),
+                "L 25".to_owned(),
+                "U 20".to_owned(),
+            ],
+            36,
+        );
+
+        for (input_str, res) in [input_res_0, input_res_1] {
+            let commands = input_str
+                .into_iter()
+                .filter_map(|s| Command::try_from(s).ok())
+                .collect::<Vec<Command>>();
+
+            let mut rope = Rope::init(10);
+
+            let log = rope.apply_multiple(commands.into_iter());
+            let flat_log = log.iter().flatten().copied().collect();
+            let (_count_log, position_log) = inspect_log(flat_log);
+
+            assert_eq!(position_log.len(), res);
+        }
+    }
+
+    #[test]
+    fn test_inspect_log() {
+        let ref_log = vec![
+            [0, 0].into(),
+            [0, 0].into(),
+            [0, 0].into(),
+            [0, 1].into(),
+            [0, 0].into(),
+            [0, 0].into(),
+            [0, 2].into(),
+            [0, 1].into(),
+            [0, 0].into(),
+            [0, 3].into(),
+            [0, 2].into(),
+            [0, 1].into(),
+        ];
+        let (count_log, position_log) = inspect_log(ref_log);
+
+        let ref_count_log = vec![6, 3, 2, 1];
+        let ref_position_log: Vec<Coord> =
+            vec![[0, 0].into(), [0, 1].into(), [0, 2].into(), [0, 3].into()];
+
+        assert_eq!(count_log, ref_count_log);
+        assert_eq!(position_log, ref_position_log);
     }
 }
