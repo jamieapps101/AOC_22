@@ -34,54 +34,44 @@ def clock_cycle(cycle_commands: List[Tuple[str, int]]):
     X = 1
     cycle_count = 1
     stored_X_change = 0
-    sum_signal_strength = 0
+    crt_grid = []
+    crt_row = []
+    pixel_count = 0
     for command in cycle_commands:
         # print(f"Command is {command}")
         if command[0] == "noop":
             # print(f"Start of Cycle {cycle_count}")
-            if (
-                cycle_count == 20
-                or cycle_count == 60
-                or cycle_count == 100
-                or cycle_count == 140
-                or cycle_count == 180
-                or cycle_count == 220
-            ):
-                # print(f"Required Cycle!")
-                # print(f"X during Required Cycle is {X}")
-                sum_signal_strength += cycle_count * X
+            pixel_count, crt_row, crt_grid = crt_operations(
+                X, pixel_count, crt_row, crt_grid
+            )
+            # print(f"Pixel Count is {pixel_count}")
+            # print(f"CRT Row is {crt_row}")
+            # print(f"CRT Grid is {crt_grid}")
+            # print(f"X during Cycle {cycle_count} is {X}")
             # print(f"End of Cycle {cycle_count}, noop started and ended")
             # print(f"X at cycle end is {X}")
             cycle_count += 1
         elif command[0] == "addx":
             # print(f"Start of Cycle {cycle_count}")
             stored_X_change = command[1]
-            if (
-                cycle_count == 20
-                or cycle_count == 60
-                or cycle_count == 100
-                or cycle_count == 140
-                or cycle_count == 180
-                or cycle_count == 220
-            ):
-                # print(f"Required Cycle!")
-                # print(f"X during Required Cycle is {X}")
-                sum_signal_strength += cycle_count * X
+            # print(f"X during Cycle {cycle_count} is {X}")
+            pixel_count, crt_row, crt_grid = crt_operations(
+                X, pixel_count, crt_row, crt_grid
+            )
+            # print(f"Pixel Count is {pixel_count}")
+            # print(f"CRT Row is {crt_row}")
+            # print(f"CRT Grid is {crt_grid}")
             # print(f"End of Cycle {cycle_count}, addx started and running")
             # print(f"X at cycle end is {X}")
             cycle_count += 1
             # print(f"Start of Cycle {cycle_count}")
-            if (
-                cycle_count == 20
-                or cycle_count == 60
-                or cycle_count == 100
-                or cycle_count == 140
-                or cycle_count == 180
-                or cycle_count == 220
-            ):
-                # print(f"Required Cycle!")
-                # print(f"X during Required Cycle is {X}")
-                sum_signal_strength += cycle_count * X
+            # print(f"X during Cycle {cycle_count} is {X}")
+            pixel_count, crt_row, crt_grid = crt_operations(
+                X, pixel_count, crt_row, crt_grid
+            )
+            # print(f"Pixel Count is {pixel_count}")
+            # print(f"CRT Row is {crt_row}")
+            # print(f"CRT Grid is {crt_grid}")
             if stored_X_change < 0:
                 X += stored_X_change
             elif stored_X_change > 0:
@@ -90,45 +80,58 @@ def clock_cycle(cycle_commands: List[Tuple[str, int]]):
             # print(f"X at cycle end is {X}")
             cycle_count += 1
             stored_X_change = 0
-    print(f"Sum Signal Strength = {sum_signal_strength}")
-    return X, cycle_count, sum_signal_strength
+    # print(crt_grid)
+    # print(len(crt_grid))
+    return crt_grid
+
+
+def crt_operations(
+    sprite_position: int, pixel_count: int, crt_row: List[str], crt_grid: List
+) -> List[List[str]]:
+    if (
+        pixel_count == sprite_position
+        or pixel_count == sprite_position - 1
+        or pixel_count == sprite_position + 1
+    ):
+        crt_action = "#"
+        crt_row.append(crt_action)
+        pixel_count += 1
+    else:
+        crt_action = " "
+        crt_row.append(crt_action)
+        pixel_count += 1
+    if pixel_count == 40:
+        crt_grid.append(crt_row)
+        # print(f"CRT Grid: {crt_grid}")
+        crt_row = []
+        pixel_count = 0
+    return pixel_count, crt_row, crt_grid
+
+
+def render_grid(crt_grid: List[List[str]]):
+    for row in crt_grid:
+        print("".join(row))
 
 
 def main():
     input_data = read_file(FILE_PATH)
     # input_data = read_file(TEST_FILE_PATH)
-    clock_cycle(input_data)
+    crt_grid = clock_cycle(input_data)
+    render_grid(crt_grid)
 
 
 if __name__ == "__main__":
     main()
 
-# CPU has one register: x
-# Each tick of clock circuit = 1 cycle
-# Starts with value 1
-# Two possible instructions:
-# addx V: after two cycles, X register increased by V
-# V can be negative
-# noop: takes one cycle to complete - has no effect
-# consider instructions:
-# noop
-# addx 3
-# addx -5
-# start cycle 1: noop begins - X = 1
-# end cycle 1: noop ends - X = 1
-# start cycle 2: addx 3 begins - X = 1
-# end cycle 2: addx 3 continues - X = 1
-# start cycle 3: addx 3 continues - X = 1
-# end cycle 3: addx 3 ends - X = 4
-# start cycle 4: addx -5 begins - X = 4
-# end cycle 4: addx -5 continues - X = 4
-# start cycle 5: addx -5 continues - X = 4
-# end cycle 5: addx -5 ends - X = -1
-
-# Consider signal strength - cycle number*value of X during:
-# 20th cycle and every 40th cycle after
-# 60th
-# 100th
-# 140th
-# 180th
-# 220th
+# Part Two
+# X = horizontal position of sprite
+# sets horizontal position of middle of 3 pixel wide sprite.
+# CRT has a screen 40 pixels wide and 6 pixels high
+# CRT draws from the top row L-R onwards
+# Leftmost pixel is 0, rightmost pixel is 39
+# CRT draws one pixel per clock cycle
+# CRT will complete the 6 'rows' and then go back to the start of row 1
+# Can determine if the sprite is visible once CRT draws a pixel:
+# X in a given cycle determines where the sprite is
+# If pixel in sprite is currently being drawn, pixel will be lit (#)
+# If pixel not in sprite is currently being drawn, pixel will be dark (.)
