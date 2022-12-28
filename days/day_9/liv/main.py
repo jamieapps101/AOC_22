@@ -85,16 +85,40 @@ def tail_movements(head_coordinates: List[int], tail_coordinates: List[int]):
 
 def head_movements(movement_data: List[Tuple[str, int]]):
     head_coordinates = [0, 0]
+    knot_one_coordinates = [0,0]
+    knot_two_coordinates = [0,0]
+    knot_three_coordinates = [0,0]
+    knot_four_coordinates = [0,0]
+    knot_five_coordinates = [0,0]
+    knot_six_coordinates = [0,0]
+    knot_seven_coordinates = [0,0]
+    knot_eight_coordinates = [0,0]
     tail_coordinates = [0, 0]
     tail_location_log = {}
     for instruction in movement_data:
         if instruction[0] == "R":
             for step in range(instruction[1]):
-                # print(f"Right Step = {step}")
+              # print(f"Right Step = {step}")
                 head_coordinates[0] += 1
-                # print(f"Head Coordinates = {head_coordinates}")
-                tail_coordinates = tail_movements(head_coordinates, tail_coordinates)
-                # print(f"Tail Coordinates = {tail_coordinates}")
+              # print(f"Head Coordinates = {head_coordinates}")
+                knot_one_coordinates = tail_movements(head_coordinates, knot_one_coordinates)
+              # print(f"Knot One Coordinates = {knot_one_coordinates}")
+                knot_two_coordinates = tail_movements(knot_one_coordinates, knot_two_coordinates)
+              # print(f"Knot Two Coordinates = {knot_two_coordinates}")
+                knot_three_coordinates = tail_movements(knot_two_coordinates, knot_three_coordinates)
+              # print(f"Knot Three Coordinates = {knot_three_coordinates}")
+                knot_four_coordinates = tail_movements(knot_three_coordinates, knot_four_coordinates)
+              # print(f"Knot Four Coordinates = {knot_four_coordinates}")
+                knot_five_coordinates = tail_movements(knot_four_coordinates, knot_five_coordinates)
+              # print(f"Knot Five Coordinates = {knot_five_coordinates}")
+                knot_six_coordinates = tail_movements(knot_five_coordinates, knot_six_coordinates)
+              # print(f"Knot Six Coordinates = {knot_six_coordinates}")
+                knot_seven_coordinates = tail_movements(knot_six_coordinates, knot_seven_coordinates)
+              # print(f"Knot Seven Coordinates = {knot_seven_coordinates}")
+                knot_eight_coordinates = tail_movements(knot_seven_coordinates, knot_eight_coordinates)
+              # print(f"Knot Eight Coordinates = {knot_eight_coordinates}")
+                tail_coordinates = tail_movements(knot_eight_coordinates, tail_coordinates)
+              # print(f"Tail Coordinates = {tail_coordinates}")
                 candidate_tail_location = tuple(tail_coordinates)
                 # print(f"Log Tail Location = {candidate_tail_location}")
                 if not candidate_tail_location in tail_location_log:
@@ -102,11 +126,27 @@ def head_movements(movement_data: List[Tuple[str, int]]):
                 # print(f"Tail Location Log: {tail_location_log}")
         elif instruction[0] == "L":
             for step in range(instruction[1]):
-                # print(f"Left Step = {step}")
+              # print(f"Left Step = {step}")
                 head_coordinates[0] -= 1
-                # print(f"Head Coordinates = {head_coordinates}")
-                tail_coordinates = tail_movements(head_coordinates, tail_coordinates)
-                # print(f"Tail Coordinates = {tail_coordinates}")
+              # print(f"Head Coordinates = {head_coordinates}")
+                knot_one_coordinates = tail_movements(head_coordinates, knot_one_coordinates)
+              # print(f"Knot One Coordinates = {knot_one_coordinates}")
+                knot_two_coordinates = tail_movements(knot_one_coordinates, knot_two_coordinates)
+              # print(f"Knot Two Coordinates = {knot_two_coordinates}")
+                knot_three_coordinates = tail_movements(knot_two_coordinates, knot_three_coordinates)
+              # print(f"Knot Three Coordinates = {knot_three_coordinates}")
+                knot_four_coordinates = tail_movements(knot_three_coordinates, knot_four_coordinates)
+              # print(f"Knot Four Coordinates = {knot_four_coordinates}")
+                knot_five_coordinates = tail_movements(knot_four_coordinates, knot_five_coordinates)
+              # print(f"Knot Five Coordinates = {knot_five_coordinates}")
+                knot_six_coordinates = tail_movements(knot_five_coordinates, knot_six_coordinates)
+              # print(f"Knot Six Coordinates = {knot_six_coordinates}")
+                knot_seven_coordinates = tail_movements(knot_six_coordinates, knot_seven_coordinates)
+              # print(f"Knot Seven Coordinates = {knot_seven_coordinates}")
+                knot_eight_coordinates = tail_movements(knot_seven_coordinates, knot_eight_coordinates)
+              # print(f"Knot Eight Coordinates = {knot_eight_coordinates}")
+                tail_coordinates = tail_movements(knot_eight_coordinates, tail_coordinates)
+              # print(f"Tail Coordinates = {tail_coordinates}")
                 candidate_tail_location = tuple(tail_coordinates)
                 # print(f"Log Tail Location = {candidate_tail_location}")
                 if not candidate_tail_location in tail_location_log:
@@ -114,11 +154,27 @@ def head_movements(movement_data: List[Tuple[str, int]]):
                 # print(f"Tail Location Log: {tail_location_log}")
         elif instruction[0] == "U":
             for step in range(instruction[1]):
-                # print(f"Up Step = {step}")
+              # print(f"Up Step = {step}")
                 head_coordinates[1] += 1
-                # print(f"Head Coordinates = {head_coordinates}")
-                tail_coordinates = tail_movements(head_coordinates, tail_coordinates)
-                # print(f"Tail Coordinates = {tail_coordinates}")
+              # print(f"Head Coordinates = {head_coordinates}")
+                knot_one_coordinates = tail_movements(head_coordinates, knot_one_coordinates)
+              # print(f"Knot One Coordinates = {knot_one_coordinates}")
+                knot_two_coordinates = tail_movements(knot_one_coordinates, knot_two_coordinates)
+              # print(f"Knot Two Coordinates = {knot_two_coordinates}")
+                knot_three_coordinates = tail_movements(knot_two_coordinates, knot_three_coordinates)
+              # print(f"Knot Three Coordinates = {knot_three_coordinates}")
+                knot_four_coordinates = tail_movements(knot_three_coordinates, knot_four_coordinates)
+              # print(f"Knot Four Coordinates = {knot_four_coordinates}")
+                knot_five_coordinates = tail_movements(knot_four_coordinates, knot_five_coordinates)
+              # print(f"Knot Five Coordinates = {knot_five_coordinates}")
+                knot_six_coordinates = tail_movements(knot_five_coordinates, knot_six_coordinates)
+              # print(f"Knot Six Coordinates = {knot_six_coordinates}")
+                knot_seven_coordinates = tail_movements(knot_six_coordinates, knot_seven_coordinates)
+              # print(f"Knot Seven Coordinates = {knot_seven_coordinates}")
+                knot_eight_coordinates = tail_movements(knot_seven_coordinates, knot_eight_coordinates)
+              # print(f"Knot Eight Coordinates = {knot_eight_coordinates}")
+                tail_coordinates = tail_movements(knot_eight_coordinates, tail_coordinates)
+              # print(f"Tail Coordinates = {tail_coordinates}")
                 candidate_tail_location = tuple(tail_coordinates)
                 # print(f"Log Tail Location = {candidate_tail_location}")
                 if not candidate_tail_location in tail_location_log:
@@ -126,39 +182,32 @@ def head_movements(movement_data: List[Tuple[str, int]]):
                 # print(f"Tail Location Log: {tail_location_log}")
         elif instruction[0] == "D":
             for step in range(instruction[1]):
-                # print(f"Down Step = {step}")
+              # print(f"Down Step = {step}")
                 head_coordinates[1] -= 1
-                # print(f"Head Coordinates = {head_coordinates}")
-                tail_coordinates = tail_movements(head_coordinates, tail_coordinates)
-                # print(f"Tail Coordinates = {tail_coordinates}")
+              # print(f"Head Coordinates = {head_coordinates}")
+                knot_one_coordinates = tail_movements(head_coordinates, knot_one_coordinates)
+              # print(f"Knot One Coordinates = {knot_one_coordinates}")
+                knot_two_coordinates = tail_movements(knot_one_coordinates, knot_two_coordinates)
+              # print(f"Knot Two Coordinates = {knot_two_coordinates}")
+                knot_three_coordinates = tail_movements(knot_two_coordinates, knot_three_coordinates)
+              # print(f"Knot Three Coordinates = {knot_three_coordinates}")
+                knot_four_coordinates = tail_movements(knot_three_coordinates, knot_four_coordinates)
+              # print(f"Knot Four Coordinates = {knot_four_coordinates}")
+                knot_five_coordinates = tail_movements(knot_four_coordinates, knot_five_coordinates)
+              # print(f"Knot Five Coordinates = {knot_five_coordinates}")
+                knot_six_coordinates = tail_movements(knot_five_coordinates, knot_six_coordinates)
+              # print(f"Knot Six Coordinates = {knot_six_coordinates}")
+                knot_seven_coordinates = tail_movements(knot_six_coordinates, knot_seven_coordinates)
+              # print(f"Knot Seven Coordinates = {knot_seven_coordinates}")
+                knot_eight_coordinates = tail_movements(knot_seven_coordinates, knot_eight_coordinates)
+              # print(f"Knot Eight Coordinates = {knot_eight_coordinates}")
+                tail_coordinates = tail_movements(knot_eight_coordinates, tail_coordinates)
+              # print(f"Tail Coordinates = {tail_coordinates}")
                 candidate_tail_location = tuple(tail_coordinates)
                 # print(f"Log Tail Location = {candidate_tail_location}")
                 if not candidate_tail_location in tail_location_log:
                     tail_location_log[candidate_tail_location] = 1
                 # print(f"Tail Location Log: {tail_location_log}")
-        # print(f"Head Coordinates: {head_coordinates}")
-        # if head_coordinates[0] - tail_coordinates[0] >= 2 or head_coordinates[1] - tail_coordinates[1] >= 2:
-        #     if head_coordinates[0] == tail_coordinates[0] and head_coordinates[1] > tail_coordinates[1]:
-        #         tail_coordinates[1] += 1
-        #     elif head_coordinates[0] == tail_coordinates[0] and head_coordinates[1] < tail_coordinates[1]:
-        #         tail_coordinates[1] -= 1
-        #     elif head_coordinates[1] == tail_coordinates[1] and head_coordinates[0] > tail_coordinates[0]:
-        #         tail_coordinates[0] += 1
-        #     elif head_coordinates[1] == tail_coordinates[1] and head_coordinates[0] < tail_coordinates[0]:
-        #         tail_coordinates[0] -= 1
-        #     elif head_coordinates[0] > tail_coordinates[0] and head_coordinates[1] > tail_coordinates[1]:
-        #         tail_coordinates[0] += 1
-        #         tail_coordinates[1] += 1
-        #     elif head_coordinates[0] < tail_coordinates[0] and head_coordinates[1] < tail_coordinates[1]:
-        #         tail_coordinates[0] -= 1
-        #         tail_coordinates[1] -= 1
-        #     elif head_coordinates[0] > tail_coordinates[0] and head_coordinates[1] < tail_coordinates[1]:
-        #         tail_coordinates[0] += 1
-        #         tail_coordinates[1] -= 1
-        #     elif head_coordinates[0] < tail_coordinates[0] and head_coordinates[1] > tail_coordinates[1]:
-        #         tail_coordinates[0] -= 1
-        #         tail_coordinates[1] += 1
-        #   # print(f"Tail Coordinates: {tail_coordinates}")
     tail_locations = sum(tail_location_log.values())
     print(f"Number of Unique Tail Locations: {tail_locations}")
     return head_coordinates, tail_locations
