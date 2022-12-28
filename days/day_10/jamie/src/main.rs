@@ -5,18 +5,21 @@ fn main() {
     let line_iter = stdin().lines().filter_map(|l| l.ok());
     let instr_iter = line_iter.map(|l| Instruction::try_from(l).unwrap());
     let mut computer = Computer::from(instr_iter);
-    let mut sum = 0;
-    for cycle in 1..221 {
-        let signal_strength = computer.register * cycle;
+    let mut screen = Crt::<40, 6>::default();
+    // let mut sum = 0;
+    loop {
+        // let signal_strength = computer.register * cycle;
+        screen.update(Some(computer.register));
         if computer.clock().is_err() {
             println!("Ran out of instructions");
             break;
         }
-        if vec![20, 60, 100, 140, 180, 220].contains(&cycle) {
-            sum += signal_strength
-        }
+        // if vec![20, 60, 100, 140, 180, 220].contains(&cycle) {
+        //     sum += signal_strength
+        // }
     }
-    println!("signal strength sum = {}", sum);
+    println!("{screen}");
+    // println!("signal strength sum = {}", sum);
 }
 
 #[cfg_attr(test, derive(Debug, PartialEq))]
@@ -107,6 +110,86 @@ impl<I: Iterator<Item = Instruction>> Computer<I> {
                 Ok(())
             }
         }
+    }
+}
+
+#[derive(Clone, Copy)]
+enum PixelState {
+    Lit,
+    Dark,
+}
+
+impl Default for PixelState {
+    fn default() -> Self {
+        Self::Dark
+    }
+}
+
+impl std::fmt::Display for PixelState {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            PixelState::Dark => write!(f, "."),
+            PixelState::Lit => write!(f, "#"),
+        }
+    }
+}
+
+struct Crt<const W: usize, const H: usize> {
+    next_pixel: usize,
+    current_row: usize,
+    screen: [[PixelState; W]; H],
+}
+
+impl<const W: usize, const H: usize> Default for Crt<W, H> {
+    fn default() -> Self {
+        Self {
+            next_pixel: 0,
+            current_row: 0,
+            screen: [[PixelState::default(); W]; H],
+        }
+    }
+}
+
+impl<const W: usize, const H: usize> Crt<W, H> {
+    fn update(&mut self, sprite_position: Option<i32>) {
+        // update the screen state to reflect the new
+        let current_pixel = &mut self.screen[self.current_row][self.next_pixel];
+
+        if let Some(position) = sprite_position {
+            *current_pixel = if (self.next_pixel == position as usize + 1)
+                || (self.next_pixel == position as usize)
+                || (position > 1 && self.next_pixel == position as usize - 1)
+            {
+                PixelState::Lit
+            } else {
+                PixelState::Dark
+            };
+        }
+
+        self.next_pixel = (self.next_pixel + 1) % W;
+        if self.next_pixel == 0 {
+            self.current_row = (self.current_row + 1) % H;
+        }
+    }
+
+    fn render(&self) -> Vec<String> {
+        self.screen
+            .iter()
+            .map(|row| {
+                row.iter()
+                    .map(|pixel| format!("{pixel}"))
+                    .collect::<String>()
+            })
+            .collect()
+    }
+}
+
+impl<const W: usize, const H: usize> std::fmt::Display for Crt<W, H> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        for row in self.render() {
+            writeln!(f, "{}", row)?;
+        }
+        Ok(())
     }
 }
 
