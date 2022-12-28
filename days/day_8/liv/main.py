@@ -33,20 +33,20 @@ def visibility_check(tree_grid: List[List[int]]):
     for x_index in range(tree_grid.shape[0]):
         for y_index in range(tree_grid.shape[1]):
             tree = tree_grid[x_index, y_index]
-            # print(x_index, y_index)
-            # print(tree)
+            print(x_index, y_index)
+            print(tree)
             row = tree_grid[x_index, :]
             column = tree_grid[:, y_index]
-            # print(row)
-            # print(column)
+            print(row)
+            print(column)
             left_view = row[0:y_index]
             right_view = row[y_index + 1 : max_y_dimension]  # noqa E203
             up_view = column[0:x_index]
             down_view = column[x_index + 1 : max_x_dimension]  # noqa E203
-            # print(f"Left View = {left_view}")
-            # print(f"Right View = {right_view}")
-            # print(f"Up View = {up_view}")
-            # print(f"Down View = {down_view}")
+            print(f"Left View = {left_view}")
+            print(f"Right View = {right_view}")
+            print(f"Up View = {up_view}")
+            print(f"Down View = {down_view}")
             blocking_tree_left_count = np.count_nonzero(left_view >= tree)
             blocking_tree_right_count = np.count_nonzero(right_view >= tree)
             blocking_tree_up_count = np.count_nonzero(up_view >= tree)
@@ -137,8 +137,8 @@ def visibility_check(tree_grid: List[List[int]]):
 
 
 def main():
-    input_data = read_file(FILE_PATH)
-    # input_data = read_file(TEST_FILE_PATH)
+    # input_data = read_file(FILE_PATH)
+    input_data = read_file(TEST_FILE_PATH)
     visibility_check(input_data)
 
 
